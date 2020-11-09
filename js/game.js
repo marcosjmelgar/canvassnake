@@ -17,21 +17,23 @@
         gameScene = null,
         body = [],
         food = null,
+        specialfood = null,
         //var wall = [],
         dir = 0,
         score = 0,
         iBody = new Image(),
         iFood = new Image(),
         aEat = new Audio(),
-        aDie = new Audio();
+        aDie = new Audio(),
+        iSpecialfood = new Image();
 
-    window.requestAnimationFrame = (function () {
-        return window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        function (callback) {
-            window.setTimeout(callback, 17);
-        };
+        window.requestAnimationFrame = (function () {
+            return window.requestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 17);
+            };
     }());
 
     document.addEventListener('keydown', function (evt) {
@@ -124,8 +126,10 @@
         iFood.src = 'assets/fruit.png';
         aEat.src = 'assets/chomp.m4a';
         aDie.src = 'assets/dies.m4a';
+        iSpecialfood.src = 'assets/star.png';
     // Create food
         food = new Rectangle(80, 80, 10, 10);
+        specialfood = new Rectangle (80, 80, 10, 10);
     // Create walls
     //wall.push(new Rectangle(50, 50, 10, 10));
     //wall.push(new Rectangle(50, 100, 10, 10));
@@ -168,6 +172,8 @@
         body.push(new Rectangle(0, 0, 10, 10));
         food.x = random(canvas.width / 10 - 1) * 10;
         food.y = random(canvas.height / 10 - 1) * 10;
+        specialfood.x = random(canvas.width / 10 - 1) * 10;
+        specialfood.y = random(canvas.height / 10 - 1) * 10;
         gameover = false;
     };
 
@@ -190,6 +196,7 @@
         // Draw food
         ctx.strokeStyle = '#f00';
         food.drawImage(ctx, iFood);
+        specialfood.drawImage (ctx, iSpecialfood);
         // Draw score
         ctx.fillStyle = '#fff';
         ctx.textAlign = 'left';
@@ -265,6 +272,12 @@
                 score += 1;
                 food.x = random(canvas.width / 10 - 1) * 10;
                 food.y = random(canvas.height / 10 - 1) * 10;
+                aEat.play();
+            }
+            if (body [0].intersects(specialfood)) {
+                score += 10;
+                specialfood.x = random(canvas.width / 10 - 1) * 10;
+                specialfood.y = random(canvas.height / 10 - 1) * 10;
                 aEat.play();
             }
             // Wall Intersects
