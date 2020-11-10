@@ -15,19 +15,19 @@
         scenes = [],
         mainScene = null,
         gameScene = null,
+        highscoresScene = null,
         body = [],
         food = null,
         specialfood = null,
         //var wall = [],
+        highscores = [],
+        posHighscore = 10,
         dir = 0,
         score = 0,
         iBody = new Image(),
         iFood = new Image(),
         aEat = new Audio(),
         aDie = new Audio(),
-        highscores = [],
-        highscoreScene = null,
-        afterHighscore = 5,
         iSpecialfood = new Image();
 
         window.requestAnimationFrame = (function () {
@@ -60,11 +60,12 @@
                 window.console.warn('Missing parameters on function intersects');
             } else {
                 return (this.x < rect.x + rect.width &&
-                this.x + this.width > rect.x &&
-                this.y < rect.y + rect.height &&
-                this.y + this.height > rect.y);
+                    this.x + this.width > rect.x &&
+                    this.y < rect.y + rect.height &&
+                    this.y + this.height > rect.y);
             }
         },
+
         fill: function (ctx) {
             if (ctx === undefined) {
                 window.console.warn('Missing parameters on function fill');
@@ -72,6 +73,7 @@
                 ctx.fillRect(this.x, this.y, this.width, this.height);
             }
         },
+
         drawImage: function (ctx, img) {
             if (img === undefined) {
                 window.console.warn('Missing parameters on function drawImage');
@@ -113,16 +115,16 @@
         }
     }
 
-    function addScore (score) {
-        afterHighscore = 0;
-        while (highscores [afterHighscore] > score && afterHighscore < highscores.length) {
-            afterHighscore += 1;
+    function addHighscore (score) {
+        posHighscore = 0;
+        while (highscores[posHighscore] > score && posHighscore < highscores.length) {
+            posHighscore += 1;
         }
-        highscores.splice (afterHighscore, 0, score);
+        highscores.splice (posHighscore, 0, score);
         if (highscores.length > 10) {
             highscore.length = 10;
         }
-        localStorage.highscores = highscores.join ("-");
+        localStorage.highscores = highscores.join (",");
     }
 
     function run() {
@@ -141,8 +143,8 @@
     // Load assets
         iBody.src = 'assets/body.png';
         iFood.src = 'assets/fruit.png';
-        aEat.src = 'assets/chomp.m4a';
-        aDie.src = 'assets/dies.m4a';
+        aEat.src = 'assets/chomp.oga';
+        aDie.src = 'assets/dies.oga';
         iSpecialfood.src = 'assets/star.png';
 
     // Create food
@@ -155,18 +157,19 @@
     //wall.push(new Rectangle(100, 50, 10, 10));
     //wall.push(new Rectangle(100, 100, 10, 10));
 
+    // Load saved highscores
+    if (localStorage.highscore) {
+        highscore = localStorage.highscore.split (",");
+    }
+
     // Start game
         run();
         repaint();
     }
 
-    // Load highscores
-    if (localStorage.highscore) {
-        highscore = localStorage.highscore.split ("-");
-    }
-
     // Main Scene
     mainScene = new Scene();
+
     mainScene.paint = function (ctx) {
 
         // Clean canvas
@@ -184,13 +187,14 @@
 
         // Load next scene
         if (lastPress === KEY_ENTER) {
-            loadScene(gameScene);
+            loadScene(highscoresScene);
             lastPress = null;
         }
     };
 
     // Game Scene
     gameScene = new Scene();
+
     gameScene.load = function () {
         score = 0;
         dir = 1;
@@ -207,7 +211,7 @@
 
     gameScene.paint = function (ctx) {
         var i = 0,
-        l = 0;
+            l = 0;
 
         // Clean canvas
         ctx.fillStyle = '#7D8A92';
@@ -250,12 +254,13 @@
 
     gameScene.act = function () {
         var i = 0,
-        l = 0;
+            l = 0;
+
         if (!pause) {
 
             // GameOver Reset
             if (gameover) {
-                loadScene(mainScene);
+                loadScene(highscoresScene);
             }
 
             // Move Body
@@ -357,5 +362,40 @@
             lastPress = null;
         }
     };
+
+    // Highscore Scene
+    highscoresScene = new Scene();
+    highscoresScene.paint = function (ctx) {
+        var i = 0,
+            l = 0;
+
+        // Clean canvas
+        ctx.fillStyle = '#7D8A92';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw title
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('HIGH SCORES', 150, 30);
+
+        // Draw high scores
+        ctx.textAlign = 'right';
+        for (i = 0, l = highscores.length; i < l; i += 1) {
+            if (i === posHighscore) {
+                ctx.fillText('*' + highscores[i], 180, 40 + i * 10);
+            } else {
+                ctx.fillText(highscores[i], 180, 40 + i * 10);
+            }
+        }
+    };
+
+    highscoresScene.act = function () {
+        // Load next scene
+        if (lastPress === KEY_ENTER) {
+        loadScene(gameScene);
+        lastPress = null;
+        }
+    };
+
     window.addEventListener('load', init, false);
-}(window));
+}(window))
